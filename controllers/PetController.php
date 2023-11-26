@@ -78,7 +78,7 @@ class PetController extends \yii\rest\ActiveController
 
             foreach ($orders as $order) {
                 $result['data']['pets'][] = [
-                    'id' => $order->pet->id,
+                    'id' => $order->id,
                     'kind' => $order->pet->kind->kind,
                     'description' => $order->pet->description,
                     'image' => (new Pet())->getPhotoPet($order->pet->id),
@@ -94,22 +94,6 @@ class PetController extends \yii\rest\ActiveController
 
     public function actionSearch()
     {
-        // if (Yii::$app->request->get('description')) {
-        //     $orders = Order::find()
-        //         ->with(['district', 'pet.kind'])
-        //         ->innerJoin('pet', 'order.pet_id = pet.id')
-        //         ->where(['like', 'pet.description', Yii::$app->request->get('description')])
-        //         ->all();
-        // } else {
-        //     $orders = Order::find()
-        //         ->innerJoin('pet', 'order.pet_id = pet.id')
-        //         ->innerJoin('district', 'order.district_id = district.id')
-        //         ->innerJoin('kind', 'pet.kind_id = kind.id')
-        //         ->where(['district.district' => Yii::$app->request->get('district')])
-        //         ->andWhere(['like', 'kind.kind', Yii::$app->request->get('kind')])
-        //         ->all();
-        // }
-
         if (Yii::$app->request->get('query')) {
             $orders = Order::find()
                 ->with(['district', 'pet.kind'])
@@ -118,7 +102,24 @@ class PetController extends \yii\rest\ActiveController
                 ->all();
         }
 
-        if ($orders) {
+        if (Yii::$app->request->get('district') || Yii::$app->request->get('kind')) {
+            $orders = Order::find()
+            ->innerJoin('pet', 'order.pet_id = pet.id')
+            ->innerJoin('district', 'order.district_id = district.id')
+            ->innerJoin('kind', 'pet.kind_id = kind.id');
+            
+            if (Yii::$app->request->get('district')) {
+                $orders->andWhere(['district.district' => Yii::$app->request->get('district')]);
+            }
+            
+            if (Yii::$app->request->get('kind')) {
+                $orders->andWhere(['like', 'kind.kind', Yii::$app->request->get('kind')]);
+            }
+            
+            $orders = $orders->all();
+        }
+
+        if (isset($orders)) {
             $result = [
                 'data' => [
                     'orders' => [],
@@ -186,27 +187,27 @@ class PetController extends \yii\rest\ActiveController
         }
     }
 
-    public function actionShow($pet_id)
+    public function actionShow($id)
     {
-        if ($pet = Pet::findOne(['id' => $pet_id])) {
+        if ($order = Order::findOne(['id' => $id])) {
 
             $result = [
                 'data' => [
                     'pet' => [
-                        'id' => $pet->id,
-                        'phone' => $pet->order->user->phone,
-                        'email' => $pet->order->user->email,
-                        'name' => $pet->order->user->name,
-                        'kind' => $pet->kind->kind,
+                        'id' => $order->id,
+                        'phone' => $order->user->phone,
+                        'email' => $order->user->email,
+                        'name' => $order->user->name,
+                        'kind' => $order->pet->kind->kind,
                         'photos' => [
-                            $pet->photo1,
-                            $pet->photo2,
-                            $pet->photo3,
+                            $order->pet->photo1,
+                            $order->pet->photo2,
+                            $order->pet->photo3,
                         ],
-                        'description' => $pet->description,
-                        'mark' => $pet->mark,
-                        'district' => $pet->order->district->district,
-                        'date' => $oet->order->created_at,
+                        'description' => $order->pet->description,
+                        'mark' => $order->pet->mark,
+                        'district' => $order->district->district,
+                        'date' => $order->created_at,
                     ]
                 ]
             ];
@@ -231,7 +232,7 @@ class PetController extends \yii\rest\ActiveController
     {
         $data = Yii::$app->request->post();
 
-        if ($data['register'] && !(User::findOne(['email' => $data['email']]))) {
+        if (isset($data['register']) && !(User::findOne(['email' => $data['email']]))) {
             $user = new User();
 
             if ($user->load($data, '') && $user->validate()) {
@@ -342,7 +343,7 @@ class PetController extends \yii\rest\ActiveController
                         'error' => [
                             'code' => 422,
                             'message' => 'Validation error',
-                            'errors' => $pet->erros,
+                            'errors' => $pet->errors,
                         ]
                     ]
                 ]);
@@ -449,7 +450,7 @@ class PetController extends \yii\rest\ActiveController
                                     'error' => [
                                         'code' => 422,
                                         'message' => 'Validation error',
-                                        'errors' => $pet->erros,
+                                        'errors' => $pet->errors,
                                     ]
                                 ]
                             ]);

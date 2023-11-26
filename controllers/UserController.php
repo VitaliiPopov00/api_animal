@@ -154,7 +154,7 @@ class UserController extends \yii\rest\ActiveController
     {
         $identity = Yii::$app->user->identity;
 
-        if (($user = User::findOne(['email' => $identity->email])) && $user->created_at) {
+        if (($user = User::findOne(['email' => $identity->email])) && $user->password) {
             $ordersCount = Order::find()
                 ->where(['user_id' => $user->id])
                 ->count();
@@ -180,7 +180,7 @@ class UserController extends \yii\rest\ActiveController
                 ]
             ]);
         } else {
-            Yii::$app->response->statusCode = 403;
+            Yii::$app->response->statusCode = 401;
         }
     }
 
@@ -254,7 +254,7 @@ class UserController extends \yii\rest\ActiveController
             $orders = [];
             $result = [
                 'data' => [
-                    'order' => []
+                    'orders' => []
                 ]
             ];
 
@@ -287,22 +287,20 @@ class UserController extends \yii\rest\ActiveController
                 ->all();
 
             foreach ($orders as $status => $order) {
-                $order = isset($order[0]) ? $order[0] : false;
-                
-                if ($order) {
-                    $result['data']['order'][$status] = [
-                        'id' => $order['id'],
-                        'kind' => $order['pet']['kind']['kind'],
-                        'photo' => (new Pet())->getPhotoPet($order['pet']['id']),
-                        'description' => $order['pet']['description'],
-                        'mark' => $order['pet']['mark'],
-                        'district' => $order['district']['district'],
-                        'date' => $order['created_at'],
+                foreach($order as $orderDetail) {
+                    $result['data']['orders'][$status][] = [
+                        'id' => $orderDetail['id'],
+                        'kind' => $orderDetail['pet']['kind']['kind'],
+                        'photo' => (new Pet())->getPhotoPet($orderDetail['pet']['id']),
+                        'description' => $orderDetail['pet']['description'],
+                        'mark' => $orderDetail['pet']['mark'],
+                        'district' => $orderDetail['district']['district'],
+                        'date' => $orderDetail['created_at'],
                     ];
                 }
             }
 
-            if ($result['data']['order']) {
+            if ($result['data']['orders']) {
                 Yii::$app->response->statusCode = 200;
                 return $this->asJson($result);
             } else {

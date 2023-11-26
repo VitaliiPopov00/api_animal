@@ -64,7 +64,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
             [['name', 'phone'], 'required', 'on' => static::SCENARIO_REGISTER],
 
             [['name'], 'match', 'pattern' => '/^[А-Яа-яёЁ\s\-]+$/u', 'on' => static::SCENARIO_REGISTER],
-            [['phone'], 'match', 'pattern' => '/^[(?:\+|8)\d]{11,12}$/'],
+            [['phone'], 'match', 'pattern' => '/^(?:\+7|8)[\d]{10}$/'],
             [['email'], 'email'],
             [['email'], 'unique', 'on' => static::SCENARIO_REGISTER],
             [['password'], 'match', 'pattern' => '/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d]{7,}$/', 'on' => static::SCENARIO_REGISTER],
@@ -74,7 +74,6 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'password'], 'string', 'max' => 255],
             [['email', 'token', 'remember_token'], 'string', 'max' => 100],
-            [['phone'], 'string', 'max' => 12],
         ];
     }
 

@@ -89,9 +89,11 @@ $config = [
             'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
-                'OPTIONS api/<controller>/<action>' => '<controller>/options',
-                'OPTIONS api/<controller>/<action>/<detail>' => '<controller>/options',
-                'OPTIONS api/<action>' => 'user/options',    
+                'OPTIONS api/<action>' => 'user/options',
+                'OPTIONS api/users/phone' => 'user/options',
+                'OPTIONS api/users/email' => 'user/options',
+                'OPTIONS api/users/orders' => 'user/options',
+                'OPTIONS api/users/orders/<id>' => 'user/options',
 
                 'GET api/search' => 'pet/search', // Быстрый поиск по объявлениям
                 'GET api/pets' => 'pet/last-find', // Карточки найденных животных
@@ -101,6 +103,7 @@ $config = [
                 'GET api/districts' => 'district/district', // Список районов
                 'GET api/kinds' => 'kind/kind', // Список видов животных
                 'GET api/users' => 'user/info', // Информация о пользователе
+
                 [
                     'pluralize' => true,
                     'class' => 'yii\rest\UrlRule',
@@ -108,7 +111,7 @@ $config = [
                     'prefix' => 'api',
                     'extraPatterns' => [
                         'GET slider' => 'slider', // Слайдер с объявлениями с животными, у которых были найдены хозяева,
-                        'GET <pet_id>' => 'show', // Страница с карточкой одного животного,
+                        'GET <id>' => 'show', // Страница с карточкой одного животного,
                         'POST new' => 'new', // Страница добавления нового объявления,
                         'PATCH <order_id>' => 'update-order', // Редактирование пользователем объявления,
                     ],
